@@ -1,0 +1,1971 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="勝ち筋帖">
+<title>勝ち筋帖 v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;700;900&family=Shippori+Mincho:wght@500;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1613;
+    --sumi: #2b2522;
+    --paper: #f4ede0;
+    --washi: #ebe1cf;
+    --shu: #c8342a;
+    --shu-deep: #9b2520;
+    --gold: #b8935a;
+    --gray: #6b6159;
+    --line: #d4c8b3;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    background: var(--paper); color: var(--ink);
+    font-family: 'Noto Serif JP', serif;
+    min-height: 100vh; overscroll-behavior: none;
+  }
+  body {
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(200,52,42,0.04) 0%, transparent 40%),
+      radial-gradient(circle at 80% 90%, rgba(184,147,90,0.05) 0%, transparent 40%),
+      repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(26,22,19,0.015) 3px, rgba(26,22,19,0.015) 4px);
+    padding-bottom: 100px;
+  }
+  header {
+    padding: 28px 22px 20px;
+    border-bottom: 1px solid var(--line);
+    position: relative;
+    display: flex; justify-content: space-between; align-items: flex-end;
+  }
+  header::after {
+    content: ''; position: absolute;
+    bottom: -3px; left: 22px;
+    width: 44px; height: 1px; background: var(--shu);
+  }
+  .brand { flex: 1; }
+  .brand-row { display: flex; align-items: baseline; gap: 10px; }
+  .brand-title {
+    font-family: 'Shippori Mincho', serif; font-weight: 800;
+    font-size: 28px; letter-spacing: 0.08em;
+  }
+  .brand-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--gray); letter-spacing: 0.2em;
+  }
+  .brand-desc { font-size: 11px; color: var(--gray); margin-top: 8px; letter-spacing: 0.12em; }
+  .header-btn {
+    background: none; border: 1px solid var(--line);
+    width: 36px; height: 36px; border-radius: 50%;
+    cursor: pointer; color: var(--gray);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .tabs {
+    display: flex; padding: 18px 22px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .tab {
+    flex: 1; padding: 12px 0;
+    background: none; border: none;
+    font-family: 'Shippori Mincho', serif;
+    font-size: 14px; font-weight: 700;
+    color: var(--gray); letter-spacing: 0.15em;
+    cursor: pointer; border-bottom: 2px solid transparent;
+    transition: color 0.2s;
+  }
+  .tab.active { color: var(--ink); border-bottom-color: var(--shu); }
+  .view { padding: 20px 22px; display: none; animation: fadeIn 0.25s ease; }
+  .view.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--gray);
+    letter-spacing: 0.25em; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+
+  .track-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 10px; margin-bottom: 28px;
+  }
+  .track-btn {
+    background: var(--washi); border: 1px solid var(--line);
+    border-radius: 2px; padding: 16px 14px; text-align: left;
+    cursor: pointer; transition: all 0.15s;
+    position: relative; overflow: hidden;
+  }
+  .track-btn::before {
+    content: ''; position: absolute; left: 0; top: 0;
+    width: 3px; height: 100%; background: var(--shu);
+    transform: scaleY(0); transform-origin: top;
+    transition: transform 0.2s;
+  }
+  .track-btn:active { transform: scale(0.98); }
+  .track-btn.active { background: var(--paper); border-color: var(--shu); }
+  .track-btn.active::before { transform: scaleY(1); }
+  .track-name {
+    font-family: 'Shippori Mincho', serif;
+    font-weight: 700; font-size: 18px; letter-spacing: 0.1em;
+  }
+  .track-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--gray);
+    margin-top: 4px; letter-spacing: 0.1em;
+  }
+  .track-count .num { color: var(--shu); font-weight: 600; }
+
+  .records-header {
+    display: flex; justify-content: space-between;
+    align-items: baseline; margin-bottom: 14px;
+  }
+  .records-title {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 18px; font-weight: 700; letter-spacing: 0.1em;
+  }
+  .records-title .stamp {
+    display: inline-block; background: var(--shu);
+    color: var(--paper); font-size: 11px;
+    padding: 3px 8px; margin-left: 8px;
+    letter-spacing: 0.15em; vertical-align: middle;
+  }
+  .records-count { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--gray); }
+
+  .record-card {
+    background: #fcf8ef; border: 1px solid var(--line);
+    border-left: 3px solid var(--shu);
+    padding: 18px 18px 16px; margin-bottom: 12px;
+    cursor: pointer; transition: all 0.15s; position: relative;
+  }
+  .record-card:active { transform: scale(0.995); }
+  .card-head {
+    display: flex; justify-content: space-between;
+    align-items: baseline; margin-bottom: 10px;
+    padding-bottom: 10px; border-bottom: 1px dashed var(--line);
+  }
+  .card-race {
+    font-family: 'Shippori Mincho', serif;
+    font-weight: 700; font-size: 15px; letter-spacing: 0.08em;
+  }
+  .card-date {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--gray); letter-spacing: 0.1em;
+  }
+  .card-course { font-size: 11px; color: var(--gray); margin-bottom: 12px; letter-spacing: 0.08em; }
+  .card-horses { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .horse-chip {
+    background: var(--washi); border: 1px solid var(--line);
+    padding: 6px 10px; font-size: 12px; font-weight: 500; border-radius: 2px;
+  }
+  .horse-chip .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; color: var(--shu); display: block;
+    letter-spacing: 0.1em; margin-bottom: 2px;
+  }
+  .horse-arrow { color: var(--gray); font-size: 14px; }
+  .card-result {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+    background: var(--line); border: 1px solid var(--line); margin-top: 12px;
+  }
+  .result-cell { background: #fcf8ef; padding: 8px 6px; text-align: center; }
+  .result-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px; color: var(--gray); letter-spacing: 0.15em; margin-bottom: 2px;
+  }
+  .result-value {
+    font-family: 'Shippori Mincho', serif;
+    font-weight: 700; font-size: 13px;
+  }
+  .result-value.profit { color: var(--shu); }
+  .card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  .tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; padding: 3px 7px; letter-spacing: 0.1em; border-radius: 1px;
+  }
+  .tag.ai { background: var(--ink); color: var(--paper); }
+  .tag.pattern { background: var(--gold); color: var(--ink); }
+  .tag.comment { background: var(--shu-deep); color: var(--paper); }
+  .tag.shot { background: var(--washi); color: var(--sumi); border: 1px solid var(--line); }
+
+  .empty { text-align: center; padding: 60px 20px; color: var(--gray); }
+  .empty-mark { font-family: 'Shippori Mincho', serif; font-size: 40px; color: var(--line); margin-bottom: 12px; }
+  .empty-text { font-size: 13px; letter-spacing: 0.1em; line-height: 1.8; }
+
+  .form-group { margin-bottom: 18px; }
+  .form-label {
+    display: block; font-family: 'Shippori Mincho', serif;
+    font-size: 12px; font-weight: 700;
+    margin-bottom: 6px; letter-spacing: 0.1em;
+  }
+  .form-label .req { color: var(--shu); font-size: 10px; margin-left: 4px; }
+  .form-label .opt { color: var(--gray); font-size: 9px; margin-left: 6px; font-family: 'JetBrains Mono', monospace; }
+  .form-input, .form-select, .form-textarea {
+    width: 100%; background: #fcf8ef;
+    border: 1px solid var(--line);
+    padding: 11px 12px;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 14px; color: var(--ink);
+    border-radius: 2px;
+    -webkit-appearance: none; appearance: none;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    outline: none; border-color: var(--shu); background: #fff;
+  }
+  .form-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6159' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 14px center;
+    padding-right: 36px;
+  }
+  .form-textarea { resize: vertical; min-height: 70px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .radio-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .radio-btn {
+    background: var(--washi); border: 1px solid var(--line);
+    padding: 10px 0; text-align: center;
+    font-family: 'Shippori Mincho', serif;
+    font-size: 15px; font-weight: 700;
+    cursor: pointer; border-radius: 2px;
+    color: var(--gray); transition: all 0.15s;
+  }
+  .radio-btn.selected { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .btn-submit {
+    width: 100%; background: var(--shu); color: var(--paper);
+    border: none; padding: 16px;
+    font-family: 'Shippori Mincho', serif;
+    font-size: 16px; font-weight: 700;
+    letter-spacing: 0.2em; cursor: pointer;
+    margin-top: 8px; transition: background 0.15s;
+  }
+  .btn-submit:active { background: var(--shu-deep); }
+  .btn-cancel {
+    width: 100%; background: none; color: var(--gray);
+    border: 1px solid var(--line); padding: 12px;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 13px; letter-spacing: 0.15em;
+    cursor: pointer; margin-top: 10px;
+  }
+
+  .pattern-picker {
+    background: var(--washi); border: 1px solid var(--line);
+    border-radius: 2px; padding: 12px;
+  }
+  .pattern-selected {
+    background: #fcf8ef; border-left: 2px solid var(--gold);
+    padding: 10px 12px; font-size: 12px; line-height: 1.6;
+    margin-bottom: 8px; position: relative;
+  }
+  .pattern-selected .stats {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--gray);
+    margin-top: 4px; letter-spacing: 0.08em;
+  }
+  .pattern-selected .remove {
+    position: absolute; top: 6px; right: 6px;
+    background: none; border: none; color: var(--gray);
+    cursor: pointer; font-size: 14px; padding: 2px 6px;
+  }
+  .pattern-list-btn {
+    width: 100%; background: none;
+    border: 1px dashed var(--line); padding: 10px;
+    font-family: 'Shippori Mincho', serif;
+    font-size: 12px; color: var(--gray);
+    cursor: pointer; border-radius: 2px;
+  }
+  .pattern-list-btn:active { background: rgba(0,0,0,0.03); }
+  .pattern-list-item {
+    padding: 12px; background: #fcf8ef;
+    border: 1px solid var(--line); margin-bottom: 8px;
+    cursor: pointer; border-radius: 2px;
+  }
+  .pattern-list-item:active { background: var(--washi); }
+  .pattern-list-item.selected { border-color: var(--shu); border-left-width: 3px; }
+  .pattern-list-track {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; color: var(--shu);
+    letter-spacing: 0.15em; margin-bottom: 4px;
+  }
+  .pattern-list-name { font-size: 13px; line-height: 1.6; margin-bottom: 6px; }
+  .pattern-list-stats {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--gray); letter-spacing: 0.08em;
+  }
+
+  /* Pattern picker: track filter chips */
+  .pattern-track-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px dashed var(--line);
+  }
+
+  .track-chip {
+    background: none;
+    border: 1px solid var(--line);
+    padding: 7px 11px;
+    font-family: 'Shippori Mincho', serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--gray);
+    cursor: pointer;
+    border-radius: 2px;
+    letter-spacing: 0.08em;
+    transition: all 0.15s;
+    position: relative;
+  }
+
+  .track-chip:active { transform: scale(0.95); }
+
+  .track-chip.active {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+
+  .track-chip .count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--shu);
+    margin-left: 4px;
+    font-weight: 600;
+  }
+
+  .track-chip.active .count { color: #ffb199; }
+
+  .track-chip.empty {
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
+  .track-chip.all {
+    background: var(--washi);
+    border-color: var(--line);
+  }
+
+  .track-chip.all.active {
+    background: var(--shu);
+    color: var(--paper);
+    border-color: var(--shu);
+  }
+
+  /* Pattern picker: course group heading */
+  .pattern-group-heading {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: 0.1em;
+    margin: 14px 0 8px;
+    padding-left: 8px;
+    border-left: 2px solid var(--shu);
+  }
+
+  .pattern-group-heading:first-child { margin-top: 0; }
+
+  .pattern-group-heading .group-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--gray);
+    font-weight: 400;
+    margin-left: 6px;
+    letter-spacing: 0.1em;
+  }
+
+  /* Pattern picker: track section heading (when showing all tracks) */
+  .pattern-track-heading {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--paper);
+    background: var(--ink);
+    padding: 8px 14px;
+    margin: 18px 0 10px;
+    letter-spacing: 0.12em;
+    border-radius: 2px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .pattern-track-heading:first-child { margin-top: 0; }
+
+  .pattern-track-heading .track-count-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #ffb199;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+  }
+
+  .shot-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .shot-item {
+    aspect-ratio: 1; background: var(--washi);
+    border: 1px solid var(--line); position: relative;
+    overflow: hidden; border-radius: 2px;
+  }
+  .shot-item img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
+  .shot-item .shot-label-chip {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: rgba(26,22,19,0.8); color: var(--paper);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; padding: 4px 5px;
+    letter-spacing: 0.1em; text-align: center;
+    cursor: pointer;
+  }
+  .shot-item .shot-remove {
+    position: absolute; top: 4px; right: 4px;
+    width: 20px; height: 20px;
+    background: rgba(200,52,42,0.9); color: white;
+    border: none; border-radius: 50%;
+    font-size: 12px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .shot-add {
+    aspect-ratio: 1; background: var(--washi);
+    border: 1px dashed var(--line); border-radius: 2px;
+    cursor: pointer; display: flex;
+    align-items: center; justify-content: center;
+    font-family: 'Shippori Mincho', serif;
+    color: var(--gray); font-size: 24px;
+  }
+  .shot-add:active { background: var(--paper); }
+  .shot-add input { display: none; }
+
+  .modal {
+    position: fixed; inset: 0;
+    background: rgba(26, 22, 19, 0.6);
+    backdrop-filter: blur(4px); z-index: 100;
+    display: none; align-items: flex-end;
+    animation: fadeIn 0.2s;
+  }
+  .modal.active { display: flex; }
+  .modal-content {
+    background: var(--paper); width: 100%;
+    max-height: 92vh; overflow-y: auto;
+    padding: 24px 22px 30px;
+    border-top: 3px solid var(--shu);
+    animation: slideUp 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-head {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 18px; padding-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .modal-race {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 20px; font-weight: 800; letter-spacing: 0.08em;
+  }
+  .modal-date-course { font-size: 11px; color: var(--gray); margin-top: 4px; letter-spacing: 0.1em; }
+  .modal-head-actions { display: flex; gap: 8px; }
+  .close-btn, .edit-btn {
+    background: none; border: 1px solid var(--line);
+    width: 30px; height: 30px; font-size: 14px;
+    color: var(--gray); cursor: pointer;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .edit-btn { color: var(--shu); border-color: var(--shu); font-size: 13px; }
+
+  .detail-section { margin-bottom: 18px; }
+  .detail-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; color: var(--gray);
+    letter-spacing: 0.25em; margin-bottom: 6px;
+  }
+  .detail-value { font-size: 14px; line-height: 1.7; }
+  .detail-reason {
+    background: var(--washi); padding: 12px 14px;
+    border-left: 2px solid var(--gold);
+    font-size: 13px; line-height: 1.8; color: var(--sumi);
+  }
+  .detail-reason .stats {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--gray);
+    margin-top: 6px; display: block; letter-spacing: 0.1em;
+  }
+  .big-result {
+    background: var(--ink); color: var(--paper);
+    padding: 18px; text-align: center; margin: 18px 0;
+  }
+  .big-result-profit {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 32px; font-weight: 800;
+    color: #ffb199; letter-spacing: 0.05em;
+  }
+  .big-result-detail {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: #c4b9a8;
+    margin-top: 6px; letter-spacing: 0.15em;
+  }
+  .detail-delete {
+    width: 100%; background: none;
+    border: 1px solid var(--shu); color: var(--shu);
+    padding: 11px;
+    font-family: 'Shippori Mincho', serif;
+    font-size: 12px; letter-spacing: 0.15em;
+    cursor: pointer; margin-top: 12px;
+  }
+  .detail-shot-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .detail-shot {
+    aspect-ratio: 4/3; background: var(--washi);
+    border: 1px solid var(--line);
+    overflow: hidden; position: relative; cursor: pointer;
+  }
+  .detail-shot img { width: 100%; height: 100%; object-fit: cover; }
+  .detail-shot .shot-label-chip {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: rgba(26,22,19,0.8); color: var(--paper);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; padding: 4px 6px;
+    letter-spacing: 0.1em; text-align: center;
+  }
+
+  .img-viewer {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.95); z-index: 200;
+    display: none; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .img-viewer.active { display: flex; }
+  .img-viewer img { max-width: 100%; max-height: 100%; }
+  .img-viewer-close {
+    position: absolute; top: 20px; right: 20px;
+    width: 40px; height: 40px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white; font-size: 20px;
+    border-radius: 50%; cursor: pointer;
+  }
+
+  .settings-section {
+    background: #fcf8ef; border: 1px solid var(--line);
+    padding: 16px; margin-bottom: 16px; border-radius: 2px;
+  }
+  .settings-title {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 14px; font-weight: 700;
+    margin-bottom: 10px; letter-spacing: 0.1em;
+  }
+  .settings-desc { font-size: 11px; color: var(--gray); line-height: 1.7; margin-bottom: 12px; }
+  .csv-format {
+    background: var(--washi); padding: 10px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; line-height: 1.6; color: var(--sumi);
+    margin-bottom: 10px; border-radius: 2px;
+    overflow-x: auto; white-space: nowrap;
+  }
+  .btn-import {
+    display: inline-block;
+    background: var(--ink); color: var(--paper);
+    border: none; padding: 12px 20px;
+    font-family: 'Shippori Mincho', serif;
+    font-size: 13px; letter-spacing: 0.15em;
+    cursor: pointer; border-radius: 2px;
+  }
+  .btn-import input { display: none; }
+  .settings-stat {
+    display: flex; justify-content: space-between;
+    padding: 8px 0; border-bottom: 1px solid var(--line);
+    font-size: 12px;
+  }
+  .settings-stat:last-child { border-bottom: none; }
+  .settings-stat .value {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--shu); font-weight: 600;
+  }
+
+  .fab {
+    position: fixed; bottom: 24px; right: 22px;
+    width: 60px; height: 60px;
+    background: var(--shu); border: none;
+    border-radius: 50%; color: var(--paper);
+    font-size: 26px; font-weight: 300;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(200,52,42,0.4), 0 2px 4px rgba(26,22,19,0.15);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 50; transition: transform 0.15s;
+  }
+  .fab:active { transform: scale(0.92); }
+
+  .seal {
+    position: absolute; top: 14px; right: 14px;
+    width: 36px; height: 36px;
+    border: 2px solid var(--shu);
+    background: rgba(200,52,42,0.08);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Shippori Mincho', serif;
+    font-size: 10px; font-weight: 800;
+    color: var(--shu); transform: rotate(-8deg);
+    letter-spacing: 0; line-height: 1.1; text-align: center;
+  }
+
+  .toast {
+    position: fixed; bottom: 100px; left: 50%;
+    transform: translateX(-50%);
+    background: var(--ink); color: var(--paper);
+    padding: 12px 22px;
+    font-family: 'Shippori Mincho', serif;
+    font-size: 13px; letter-spacing: 0.1em;
+    border-radius: 2px; z-index: 300;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.25s;
+  }
+  .toast.show { opacity: 1; }
+
+  /* ===== Memo expand ===== */
+  .memo-field {
+    position: relative;
+  }
+
+  .memo-display {
+    min-height: 70px;
+    background: #fcf8ef;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    padding: 11px 12px;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--ink);
+    cursor: text;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .memo-display.empty {
+    color: #b0a692;
+    font-style: normal;
+  }
+
+  .memo-display::after {
+    content: '⤢';
+    position: absolute;
+    bottom: 8px;
+    right: 10px;
+    color: var(--gray);
+    font-size: 14px;
+    pointer-events: none;
+    background: rgba(252,248,239,0.9);
+    padding: 2px 6px;
+    border-radius: 2px;
+  }
+
+  .memo-modal-content {
+    display: flex;
+    flex-direction: column;
+    height: 92vh;
+  }
+
+  .memo-textarea-big {
+    flex: 1;
+    width: 100%;
+    background: #fcf8ef;
+    border: 1px solid var(--line);
+    padding: 16px;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 16px;
+    line-height: 1.8;
+    color: var(--ink);
+    border-radius: 2px;
+    resize: none;
+    -webkit-appearance: none;
+    appearance: none;
+    min-height: 50vh;
+  }
+
+  .memo-textarea-big:focus {
+    outline: none;
+    border-color: var(--shu);
+    background: #fff;
+  }
+
+  .memo-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+  }
+
+  .memo-actions button {
+    flex: 1;
+    padding: 14px;
+    font-family: 'Shippori Mincho', serif;
+    font-size: 14px;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    border-radius: 2px;
+  }
+
+  .memo-btn-save {
+    background: var(--shu);
+    color: var(--paper);
+    border: none;
+  }
+
+  .memo-btn-cancel {
+    background: none;
+    color: var(--gray);
+    border: 1px solid var(--line);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-row">
+      <div class="brand-title">勝ち筋帖</div>
+      <div class="brand-sub">KACHISUJI</div>
+    </div>
+    <div class="brand-desc">——— 成功パターンの記録と再現</div>
+  </div>
+  <button class="header-btn" onclick="switchTab('settings')" title="設定">⚙</button>
+</header>
+
+<div class="tabs">
+  <button class="tab active" data-view="home">一覧</button>
+  <button class="tab" data-view="all">全記録</button>
+  <button class="tab" data-view="settings">設定</button>
+</div>
+
+<div class="view active" id="view-home">
+  <div class="section-label">競 馬 場 別</div>
+  <div class="track-grid" id="trackGrid"></div>
+  <div id="trackRecords" style="display:none;">
+    <div class="records-header">
+      <div class="records-title" id="recordsTitle"></div>
+      <div class="records-count" id="recordsCount"></div>
+    </div>
+    <div id="recordsList"></div>
+  </div>
+</div>
+
+<div class="view" id="view-all">
+  <div class="section-label">全 成 功 パ タ ー ン</div>
+  <div id="allRecordsList"></div>
+</div>
+
+<div class="view" id="view-settings">
+  <div class="section-label">お 宝 条 件 マ ス タ</div>
+  <div class="settings-section">
+    <div class="settings-title">CSVインポート</div>
+    <div class="settings-desc">
+      以下のどちらかの方法で取り込めます。列の並び:
+    </div>
+    <div class="csv-format">
+競馬場,コース,条件名,成績,複勝率,単勝回収値,複勝回収値<br>
+福島,ダート1150m,大外馬番×前走3C1番手通過,4-2-1-5,58.3,446,169
+    </div>
+
+    <div class="settings-title" style="margin-top:18px; font-size:12px;">方法1: ファイル選択</div>
+    <label class="btn-import">
+      CSVファイルを選択
+      <input type="file" accept=".csv,text/csv,text/plain,application/vnd.ms-excel,*/*" onchange="importCSV(event)">
+    </label>
+
+    <div class="settings-title" style="margin-top:18px; font-size:12px;">方法2: テキストを貼り付け</div>
+    <div class="settings-desc">
+      CSVの中身を直接ここに貼り付けてボタンを押してください。
+    </div>
+    <textarea class="form-textarea" id="csvPasteArea" style="min-height: 120px; font-family: 'JetBrains Mono', monospace; font-size: 11px;" placeholder="競馬場,コース,条件名,成績,複勝率,単勝回収値,複勝回収値&#10;福島,ダート1150m,大外馬番×前走3C1番手通過,4-2-1-5,58.3,446,169&#10;..."></textarea>
+    <button class="btn-import" style="margin-top: 10px;" onclick="importCSVFromText()">貼り付けた内容を取り込む</button>
+
+    <div id="csvDebug" style="margin-top:14px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--gray); white-space: pre-wrap; word-break: break-all;"></div>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-title">競馬場別の登録状況</div>
+    <div id="patternStats"></div>
+  </div>
+
+  <div class="section-label" style="margin-top: 24px;">デ ー タ</div>
+  <div class="settings-section">
+    <div class="settings-stat">
+      <span>記録件数</span>
+      <span class="value" id="statRecords">0件</span>
+    </div>
+    <div class="settings-stat">
+      <span>お宝条件マスタ</span>
+      <span class="value" id="statPatterns">0件</span>
+    </div>
+    <div class="settings-stat">
+      <span>スクショ枚数</span>
+      <span class="value" id="statShots">0枚</span>
+    </div>
+  </div>
+
+  <div class="section-label" style="margin-top: 24px;">バ ッ ク ア ッ プ</div>
+
+  <div class="settings-section" style="background: #fff5e8; border-color: var(--gold);">
+    <div class="settings-title" style="color: var(--shu-deep);">⚠️ データが消える場合</div>
+    <div class="settings-desc" style="line-height: 1.8;">
+      Claudeアプリ内でこの画面を開いていると、セッションが切れた時にデータが消える場合があります。<br><br>
+      <strong>永続化するには:</strong><br>
+      1. Safariで開き直す<br>
+      2. 共有ボタン → 「ホーム画面に追加」<br>
+      3. そこから起動したデータは保存されます
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-title">エクスポート</div>
+    <div class="settings-desc">
+      全データ(記録・条件・スクショ)をJSONファイルに書き出します。定期的に保存しておくと安心です。
+    </div>
+    <button class="btn-import" onclick="exportAllData()">JSONをダウンロード</button>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-title">インポート(復元)</div>
+    <div class="settings-desc">
+      エクスポートしたJSONファイルから全データを復元します。現在のデータはすべて置き換えられます。
+    </div>
+    <label class="btn-import">
+      JSONファイルを選択
+      <input type="file" accept=".json,application/json,*/*" onchange="importAllData(event)">
+    </label>
+  </div>
+</div>
+
+<div class="modal" id="formModal">
+  <div class="modal-content">
+    <div class="modal-head">
+      <div>
+        <div class="modal-race" id="formTitle">新規記録</div>
+        <div class="modal-date-course" id="formSub">成功した買い目を刻む</div>
+      </div>
+      <button class="close-btn" onclick="closeForm()">×</button>
+    </div>
+
+    <form id="betForm" onsubmit="saveRecord(event)">
+      <input type="hidden" id="f_id">
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">日付<span class="req">*</span></label>
+          <input type="date" class="form-input" id="f_date" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">競馬場<span class="req">*</span></label>
+          <select class="form-select" id="f_track" required onchange="onTrackChange()">
+            <option value="">選択</option>
+            <option>札幌</option><option>函館</option><option>福島</option>
+            <option>新潟</option><option>東京</option><option>中山</option>
+            <option>中京</option><option>京都</option><option>阪神</option>
+            <option>小倉</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">レース番号<span class="req">*</span></label>
+          <input type="number" class="form-input" id="f_race" min="1" max="12" placeholder="12" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">コース</label>
+          <input type="text" class="form-input" id="f_course" placeholder="ダート1150m">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">軸馬<span class="req">*</span></label>
+        <input type="text" class="form-input" id="f_axis" placeholder="ジーティームッシュ" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">AI指数順位</label>
+        <input type="text" class="form-input" id="f_ai" placeholder="AI1位(21.64)">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">相手馬<span class="req">*</span></label>
+        <input type="text" class="form-input" id="f_partner" placeholder="ミルミナーヴァ" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">該当お宝条件<span class="opt">マスタから選択</span></label>
+        <div class="pattern-picker">
+          <div id="f_pattern_selected"></div>
+          <button type="button" class="pattern-list-btn" onclick="openPatternPicker()">＋ お宝条件を選択</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">陣営コメント評価</label>
+        <div class="radio-group">
+          <div class="radio-btn" data-value="◎">◎</div>
+          <div class="radio-btn" data-value="○">○</div>
+          <div class="radio-btn" data-value="△">△</div>
+        </div>
+        <input type="hidden" id="f_comment">
+      </div>
+
+      <div class="form-row-3">
+        <div class="form-group">
+          <label class="form-label">券種</label>
+          <select class="form-select" id="f_bet_type">
+            <option>ワイド</option><option>馬連</option><option>馬単</option>
+            <option>三連複</option><option>三連単</option>
+            <option>複勝</option><option>単勝</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">投資<span class="req">*</span></label>
+          <input type="number" class="form-input" id="f_stake" placeholder="20000" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">オッズ<span class="req">*</span></label>
+          <input type="number" step="0.1" class="form-input" id="f_odds" placeholder="5.8" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">スクショ<span class="opt">タップでラベル切替</span></label>
+        <div class="shot-grid" id="shotGrid"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">勝因メモ<span class="opt">タップで拡大</span></label>
+        <div class="memo-field">
+          <div class="memo-display empty" id="f_memo_display" onclick="openMemoModal()">タップしてメモを入力</div>
+          <input type="hidden" id="f_memo">
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit" id="submitBtn">記 録 す る</button>
+      <button type="button" class="btn-cancel" onclick="closeForm()">キャンセル</button>
+    </form>
+  </div>
+</div>
+
+<div class="modal" id="detailModal">
+  <div class="modal-content" id="detailContent"></div>
+</div>
+
+<div class="modal" id="patternModal">
+  <div class="modal-content">
+    <div class="modal-head">
+      <div>
+        <div class="modal-race">お宝条件を選択</div>
+        <div class="modal-date-course" id="patternModalSub">マスタから該当条件を選ぶ</div>
+      </div>
+      <button class="close-btn" onclick="closePatternPicker()">×</button>
+    </div>
+    <div id="patternTrackBar" class="pattern-track-bar"></div>
+    <div id="patternPickerList"></div>
+    <button type="button" class="btn-cancel" onclick="clearPattern()">条件なしにする</button>
+  </div>
+</div>
+
+<div class="img-viewer" id="imgViewer" onclick="closeImgViewer()">
+  <button class="img-viewer-close" onclick="closeImgViewer()">×</button>
+  <img id="imgViewerImg" src="" alt="">
+</div>
+
+<div class="modal" id="importChoiceModal">
+  <div class="modal-content">
+    <div class="modal-head">
+      <div>
+        <div class="modal-race">取り込み方法を選択</div>
+        <div class="modal-date-course">
+          新規 <span id="importChoiceCount" style="color:var(--shu);font-weight:700;">0</span>件 /
+          既存 <span id="importChoiceExisting">0</span>件
+        </div>
+      </div>
+      <button class="close-btn" onclick="doImport('cancel')">×</button>
+    </div>
+    <div style="font-size: 12px; color: var(--gray); line-height: 1.7; margin-bottom: 18px;">
+      どの方法で取り込みますか?
+    </div>
+
+    <button class="btn-submit" style="margin-bottom: 10px; background: var(--ink);" onclick="doImport('replace')">
+      置き換える
+    </button>
+    <div style="font-size: 10px; color: var(--gray); margin-bottom: 16px; line-height: 1.6;">
+      ※ 既存の条件をすべて削除して、新しい内容で入れ替えます。初回インポート向け。
+    </div>
+
+    <button class="btn-submit" style="margin-bottom: 10px;" onclick="doImport('append')">
+      追加する
+    </button>
+    <div style="font-size: 10px; color: var(--gray); margin-bottom: 16px; line-height: 1.6;">
+      ※ 既存の条件はそのままで、新しい条件を追加します。
+    </div>
+
+    <button class="btn-cancel" onclick="doImport('cancel')">キャンセル</button>
+  </div>
+</div>
+
+<div class="modal" id="memoModal">
+  <div class="modal-content memo-modal-content">
+    <div class="modal-head">
+      <div>
+        <div class="modal-race">勝因メモ</div>
+        <div class="modal-date-course">自信を持った理由・気づきを刻む</div>
+      </div>
+      <button class="close-btn" onclick="cancelMemoModal()">×</button>
+    </div>
+    <textarea
+      class="memo-textarea-big"
+      id="memoBigArea"
+      placeholder="・陣営コメントが良好&#10;・AI1位×お宝条件の重なり&#10;・1点勝負できた根拠&#10;・次回への気づき"
+    ></textarea>
+    <div class="memo-actions">
+      <button class="memo-btn-cancel" onclick="cancelMemoModal()">キャンセル</button>
+      <button class="memo-btn-save" onclick="saveMemoModal()">決 定</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<button class="fab" onclick="openForm()">+</button>
+
+<script>
+const TRACKS = ['札幌','函館','福島','新潟','東京','中山','中京','京都','阪神','小倉'];
+const SHOT_LABELS = ['陣営','馬柱','AI','レース','オッズ','その他'];
+
+let records = [];
+let patterns = [];
+let currentTrack = null;
+let editingId = null;
+let formShots = [];
+let selectedPattern = null;
+
+async function loadAll() {
+  try {
+    const r = await window.storage.get('bet_records_v2');
+    records = r && r.value ? JSON.parse(r.value) : [];
+  } catch (e) { records = []; }
+
+  try {
+    const p = await window.storage.get('patterns_v2');
+    patterns = p && p.value ? JSON.parse(p.value) : [];
+  } catch (e) { patterns = []; }
+
+  if (records.length === 0 && patterns.length === 0) {
+    patterns = [
+      {id:'p1', track:'福島', course:'ダート1150m', name:'大外馬番×前走3コーナー1番手通過', record:'4-2-1-5', rate:58.3, win_ror:446, place_ror:169},
+      {id:'p2', track:'福島', course:'ダート1150m', name:'前走1800m以下を3C1番手通過×5歳以下の関西馬', record:'22-8-8-35', rate:52.1, win_ror:359, place_ror:183}
+    ];
+    records = [{
+      id: Date.now(),
+      date: '2026-04-21',
+      track: '福島', race: 12, course: 'ダート1150m',
+      axis: 'ジーティームッシュ', ai: 'AI1位(21.64)',
+      partner: 'ミルミナーヴァ', pattern_id: 'p1',
+      comment: '◎', bet_type: 'ワイド',
+      stake: 20000, odds: 5.8,
+      memo: '陣営コメント良好で自信を持って1点勝負。AI1位×お宝条件×陣営◎の三点セット。',
+      shots: []
+    }];
+    await saveRecords();
+    await savePatterns();
+  }
+}
+
+async function safeStorageSet(key, value) {
+  // window.storage.set may throw even when the write succeeds, due to
+  // strict response format checks. Swallow those and only surface real failures
+  // on a subsequent read.
+  try {
+    await window.storage.set(key, value);
+    return true;
+  } catch (e) {
+    // Verify by reading back: if the value is there, treat as success.
+    try {
+      const check = await window.storage.get(key);
+      if (check && check.value === value) return true;
+    } catch (_) {}
+    return false;
+  }
+}
+
+async function saveRecords() {
+  const ok = await safeStorageSet('bet_records_v2', JSON.stringify(records));
+  if (!ok) showToast('記録の保存に失敗しました');
+}
+
+async function savePatterns() {
+  await safeStorageSet('patterns_v2', JSON.stringify(patterns));
+  // silent: patterns save is not user-initiated on seed
+}
+
+function getPattern(id) { return patterns.find(p => p.id === id); }
+
+function renderTracks() {
+  const grid = document.getElementById('trackGrid');
+  grid.innerHTML = TRACKS.map(t => {
+    const count = records.filter(r => r.track === t).length;
+    return `
+      <button class="track-btn ${currentTrack === t ? 'active' : ''}" onclick="selectTrack('${t}')">
+        <div class="track-name">${t}</div>
+        <div class="track-count"><span class="num">${count}</span> 件の成功記録</div>
+      </button>
+    `;
+  }).join('');
+}
+
+function selectTrack(track) {
+  currentTrack = currentTrack === track ? null : track;
+  renderTracks();
+  const panel = document.getElementById('trackRecords');
+  if (!currentTrack) { panel.style.display = 'none'; return; }
+  panel.style.display = 'block';
+  document.getElementById('recordsTitle').innerHTML = `${currentTrack} <span class="stamp">勝ち筋</span>`;
+  const filtered = records.filter(r => r.track === track);
+  document.getElementById('recordsCount').textContent = `${filtered.length} / ${records.length}`;
+  const sorted = [...filtered].sort((a,b) => new Date(b.date) - new Date(a.date));
+  document.getElementById('recordsList').innerHTML = sorted.length
+    ? sorted.map(renderCard).join('')
+    : '<div class="empty"><div class="empty-mark">—</div><div class="empty-text">この競馬場の記録はまだ<br>ありません</div></div>';
+}
+
+function renderAll() {
+  const list = document.getElementById('allRecordsList');
+  if (records.length === 0) {
+    list.innerHTML = '<div class="empty"><div class="empty-mark">—</div><div class="empty-text">記録はまだありません<br>右下の「+」から追加</div></div>';
+    return;
+  }
+  const sorted = [...records].sort((a,b) => new Date(b.date) - new Date(a.date));
+  list.innerHTML = sorted.map(renderCard).join('');
+}
+
+function renderCard(r) {
+  const profit = Math.round(r.stake * r.odds - r.stake);
+  const pattern = r.pattern_id ? getPattern(r.pattern_id) : null;
+  const shots = r.shots || [];
+  return `
+    <div class="record-card" onclick="showDetail(${r.id})">
+      <div class="seal">的中</div>
+      <div class="card-head">
+        <div class="card-race">${r.track}${r.race}R</div>
+        <div class="card-date">${r.date.replace(/-/g,'.')}</div>
+      </div>
+      ${r.course ? `<div class="card-course">${escapeHtml(r.course)}</div>` : ''}
+      <div class="card-horses">
+        <div class="horse-chip"><span class="label">軸</span>${escapeHtml(r.axis)}</div>
+        <span class="horse-arrow">—</span>
+        <div class="horse-chip"><span class="label">相手</span>${escapeHtml(r.partner)}</div>
+      </div>
+      <div class="card-tags">
+        ${r.ai ? `<span class="tag ai">${escapeHtml(r.ai)}</span>` : ''}
+        ${pattern ? `<span class="tag pattern">お宝条件</span>` : ''}
+        ${r.comment ? `<span class="tag comment">陣営${r.comment}</span>` : ''}
+        ${shots.length > 0 ? `<span class="tag shot">📷 ${shots.length}</span>` : ''}
+      </div>
+      <div class="card-result">
+        <div class="result-cell"><div class="result-label">券種</div><div class="result-value">${r.bet_type}</div></div>
+        <div class="result-cell"><div class="result-label">ODDS</div><div class="result-value">${r.odds}</div></div>
+        <div class="result-cell"><div class="result-label">投資</div><div class="result-value">${(r.stake/10000).toFixed(r.stake >= 10000 ? 1 : 2)}万</div></div>
+        <div class="result-cell"><div class="result-label">収支</div><div class="result-value profit">+${(profit/10000).toFixed(1)}万</div></div>
+      </div>
+    </div>
+  `;
+}
+
+function showDetail(id) {
+  const r = records.find(x => x.id === id);
+  if (!r) return;
+  const profit = Math.round(r.stake * r.odds - r.stake);
+  const pattern = r.pattern_id ? getPattern(r.pattern_id) : null;
+  const shots = r.shots || [];
+
+  const content = document.getElementById('detailContent');
+  content.innerHTML = `
+    <div class="modal-head">
+      <div>
+        <div class="modal-race">${r.track}${r.race}R</div>
+        <div class="modal-date-course">${r.date.replace(/-/g,'.')} ${escapeHtml(r.course || '')}</div>
+      </div>
+      <div class="modal-head-actions">
+        <button class="edit-btn" onclick="openFormForEdit(${r.id})" title="編集">✎</button>
+        <button class="close-btn" onclick="closeDetail()">×</button>
+      </div>
+    </div>
+
+    <div class="big-result">
+      <div class="big-result-profit">+¥${profit.toLocaleString()}</div>
+      <div class="big-result-detail">${r.bet_type}  ${r.odds}倍  投資¥${r.stake.toLocaleString()}</div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-label">AXIS / 軸 馬</div>
+      <div class="detail-value"><strong>${escapeHtml(r.axis)}</strong>${r.ai ? ' — ' + escapeHtml(r.ai) : ''}</div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-label">PARTNER / 相 手 馬</div>
+      <div class="detail-value"><strong>${escapeHtml(r.partner)}</strong></div>
+    </div>
+
+    ${pattern ? `
+    <div class="detail-section">
+      <div class="detail-label">PATTERN / お 宝 条 件</div>
+      <div class="detail-reason">
+        ${escapeHtml(pattern.track)} ${pattern.course ? escapeHtml(pattern.course) + ' ' : ''}${escapeHtml(pattern.name)}
+        <span class="stats">${escapeHtml(pattern.record)} / 複勝率 ${pattern.rate}% / 単 ${pattern.win_ror} / 複 ${pattern.place_ror}</span>
+      </div>
+    </div>
+    ` : ''}
+
+    ${r.comment ? `
+    <div class="detail-section">
+      <div class="detail-label">STABLE / 陣 営 評 価</div>
+      <div class="detail-value"><strong style="font-size:22px;color:var(--shu);">${r.comment}</strong></div>
+    </div>
+    ` : ''}
+
+    ${shots.length > 0 ? `
+    <div class="detail-section">
+      <div class="detail-label">SHOTS / 根 拠 資 料 (${shots.length})</div>
+      <div class="detail-shot-grid">
+        ${shots.map(s => `
+          <div class="detail-shot" onclick="openImgViewer(this.querySelector('img').src)">
+            <img src="${s.data}" alt="">
+            <div class="shot-label-chip">${s.label}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    ` : ''}
+
+    ${r.memo ? `
+    <div class="detail-section">
+      <div class="detail-label">MEMO / 勝 因</div>
+      <div class="detail-reason">${escapeHtml(r.memo).replace(/\n/g,'<br>')}</div>
+    </div>
+    ` : ''}
+
+    <button class="detail-delete" onclick="deleteRecord(${r.id})">この記録を削除</button>
+  `;
+  document.getElementById('detailModal').classList.add('active');
+}
+
+async function deleteRecord(id) {
+  if (!confirm('この記録を削除しますか？')) return;
+  records = records.filter(r => r.id !== id);
+  await saveRecords();
+  closeDetail();
+  refresh();
+  showToast('削除しました');
+}
+
+function closeDetail() {
+  document.getElementById('detailModal').classList.remove('active');
+}
+
+function openForm() {
+  editingId = null;
+  formShots = [];
+  selectedPattern = null;
+  document.getElementById('formTitle').textContent = '新規記録';
+  document.getElementById('formSub').textContent = '成功した買い目を刻む';
+  document.getElementById('submitBtn').textContent = '記 録 す る';
+  document.getElementById('betForm').reset();
+  document.querySelectorAll('.radio-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('f_date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('f_memo').value = '';
+  renderMemoDisplay();
+  renderSelectedPattern();
+  renderFormShots();
+  document.getElementById('formModal').classList.add('active');
+}
+
+function openFormForEdit(id) {
+  const r = records.find(x => x.id === id);
+  if (!r) return;
+  editingId = id;
+  formShots = r.shots ? JSON.parse(JSON.stringify(r.shots)) : [];
+  selectedPattern = r.pattern_id ? getPattern(r.pattern_id) : null;
+
+  document.getElementById('formTitle').textContent = '記録を編集';
+  document.getElementById('formSub').textContent = `${r.track}${r.race}R`;
+  document.getElementById('submitBtn').textContent = '更 新 す る';
+
+  document.getElementById('f_id').value = r.id;
+  document.getElementById('f_date').value = r.date;
+  document.getElementById('f_track').value = r.track;
+  document.getElementById('f_race').value = r.race;
+  document.getElementById('f_course').value = r.course || '';
+  document.getElementById('f_axis').value = r.axis;
+  document.getElementById('f_ai').value = r.ai || '';
+  document.getElementById('f_partner').value = r.partner;
+  document.getElementById('f_bet_type').value = r.bet_type;
+  document.getElementById('f_stake').value = r.stake;
+  document.getElementById('f_odds').value = r.odds;
+  document.getElementById('f_memo').value = r.memo || '';
+  renderMemoDisplay();
+
+  document.querySelectorAll('.radio-btn').forEach(b => {
+    b.classList.toggle('selected', b.dataset.value === r.comment);
+  });
+  document.getElementById('f_comment').value = r.comment || '';
+
+  renderSelectedPattern();
+  renderFormShots();
+
+  closeDetail();
+  document.getElementById('formModal').classList.add('active');
+}
+
+function closeForm() {
+  document.getElementById('formModal').classList.remove('active');
+  document.getElementById('betForm').reset();
+  document.getElementById('f_id').value = '';
+  document.getElementById('f_memo').value = '';
+  renderMemoDisplay();
+  document.querySelectorAll('.radio-btn').forEach(b => b.classList.remove('selected'));
+  editingId = null;
+  formShots = [];
+  selectedPattern = null;
+}
+
+document.querySelectorAll('.radio-btn').forEach(btn => {
+  btn.onclick = () => {
+    const wasSelected = btn.classList.contains('selected');
+    document.querySelectorAll('.radio-btn').forEach(b => b.classList.remove('selected'));
+    if (!wasSelected) {
+      btn.classList.add('selected');
+      document.getElementById('f_comment').value = btn.dataset.value;
+    } else {
+      document.getElementById('f_comment').value = '';
+    }
+  };
+});
+
+async function saveRecord(e) {
+  e.preventDefault();
+  const record = {
+    id: editingId || Date.now(),
+    date: document.getElementById('f_date').value,
+    track: document.getElementById('f_track').value,
+    race: parseInt(document.getElementById('f_race').value),
+    course: document.getElementById('f_course').value.trim(),
+    axis: document.getElementById('f_axis').value.trim(),
+    ai: document.getElementById('f_ai').value.trim(),
+    partner: document.getElementById('f_partner').value.trim(),
+    pattern_id: selectedPattern ? selectedPattern.id : '',
+    comment: document.getElementById('f_comment').value,
+    bet_type: document.getElementById('f_bet_type').value,
+    stake: parseInt(document.getElementById('f_stake').value),
+    odds: parseFloat(document.getElementById('f_odds').value),
+    memo: document.getElementById('f_memo').value.trim(),
+    shots: formShots
+  };
+  if (editingId) {
+    const idx = records.findIndex(r => r.id === editingId);
+    if (idx >= 0) records[idx] = record;
+  } else {
+    records.push(record);
+  }
+  await saveRecords();
+  closeForm();
+  refresh();
+  showToast(editingId ? '更新しました' : '記録しました');
+}
+
+function onTrackChange() {
+  if (selectedPattern) {
+    const track = document.getElementById('f_track').value;
+    if (selectedPattern.track !== track) {
+      selectedPattern = null;
+      renderSelectedPattern();
+    }
+  }
+}
+
+function renderSelectedPattern() {
+  const el = document.getElementById('f_pattern_selected');
+  if (!selectedPattern) { el.innerHTML = ''; return; }
+  const p = selectedPattern;
+  el.innerHTML = `
+    <div class="pattern-selected">
+      <button type="button" class="remove" onclick="clearPattern()">×</button>
+      <strong>${escapeHtml(p.track)}${p.course ? ' ' + escapeHtml(p.course) : ''}</strong><br>
+      ${escapeHtml(p.name)}
+      <div class="stats">${escapeHtml(p.record)} / 複勝率 ${p.rate}% / 単 ${p.win_ror} / 複 ${p.place_ror}</div>
+    </div>
+  `;
+}
+
+function clearPattern() {
+  selectedPattern = null;
+  renderSelectedPattern();
+  closePatternPicker();
+}
+
+// ===== Pattern picker =====
+let pickerActiveTrack = null; // 'all' or track name
+
+function openPatternPicker() {
+  const formTrack = document.getElementById('f_track').value;
+  // Default filter: if form has a track, start with that track; otherwise show all
+  pickerActiveTrack = formTrack || 'all';
+  renderPatternPicker();
+  document.getElementById('patternModal').classList.add('active');
+}
+
+function renderPatternPicker() {
+  const bar = document.getElementById('patternTrackBar');
+  const list = document.getElementById('patternPickerList');
+  const sub = document.getElementById('patternModalSub');
+
+  // Build track filter chips (「全て」 + 10 tracks)
+  const trackCounts = {};
+  TRACKS.forEach(t => { trackCounts[t] = patterns.filter(p => p.track === t).length; });
+  const totalCount = patterns.length;
+
+  const chips = [];
+  chips.push(`
+    <button type="button" class="track-chip all ${pickerActiveTrack === 'all' ? 'active' : ''}"
+            onclick="setPickerTrack('all')">全て<span class="count">${totalCount}</span></button>
+  `);
+  TRACKS.forEach(t => {
+    const n = trackCounts[t];
+    const disabled = n === 0;
+    chips.push(`
+      <button type="button" class="track-chip ${pickerActiveTrack === t ? 'active' : ''} ${disabled ? 'empty' : ''}"
+              ${disabled ? 'disabled' : ''} onclick="setPickerTrack('${t}')">${t}${n > 0 ? `<span class="count">${n}</span>` : ''}</button>
+    `);
+  });
+  bar.innerHTML = chips.join('');
+
+  // Determine filtered set
+  let filtered;
+  if (pickerActiveTrack === 'all') {
+    filtered = patterns;
+    sub.textContent = `全条件 (${filtered.length}件)`;
+  } else {
+    filtered = patterns.filter(p => p.track === pickerActiveTrack);
+    sub.textContent = `${pickerActiveTrack}の条件 (${filtered.length}件)`;
+  }
+
+  // Empty state
+  if (filtered.length === 0) {
+    list.innerHTML = `
+      <div class="empty">
+        <div class="empty-mark">—</div>
+        <div class="empty-text">
+          ${pickerActiveTrack === 'all' ? '' : pickerActiveTrack + 'の'}お宝条件が<br>登録されていません<br><br>
+          <span style="font-size:11px;">設定画面からCSVをインポート</span>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  // Group by track first (if showing all), then by course family within each track
+  if (pickerActiveTrack === 'all') {
+    // Group by track, preserve TRACKS order
+    const byTrack = {};
+    TRACKS.forEach(t => { byTrack[t] = filtered.filter(p => p.track === t); });
+
+    const sections = [];
+    TRACKS.forEach(t => {
+      if (byTrack[t].length === 0) return;
+      sections.push(`
+        <div class="pattern-track-heading">
+          <span>${t}</span>
+          <span class="track-count-badge">${byTrack[t].length}件</span>
+        </div>
+        ${renderCourseGroups(byTrack[t])}
+      `);
+    });
+    list.innerHTML = sections.join('');
+  } else {
+    // Single track: just course-group
+    list.innerHTML = renderCourseGroups(filtered);
+  }
+}
+
+function renderCourseGroups(items) {
+  // Classify each pattern into a course family
+  const surfaceOf = (p) => {
+    const c = (p.course || '') + ' ' + (p.name || '');
+    if (/ダート/.test(c)) return 'ダート';
+    if (/芝/.test(c)) return '芝';
+    return 'その他';
+  };
+
+  // Group and preserve order: ダート → 芝 → その他
+  const groups = { 'ダート': [], '芝': [], 'その他': [] };
+  items.forEach(p => { groups[surfaceOf(p)].push(p); });
+
+  // Within each surface group, sort by course string (distance ascending as best-effort)
+  const extractDist = (course) => {
+    const m = (course || '').match(/(\d{3,4})/);
+    return m ? parseInt(m[1]) : 9999;
+  };
+  Object.keys(groups).forEach(k => {
+    groups[k].sort((a, b) => extractDist(a.course) - extractDist(b.course));
+  });
+
+  const parts = [];
+  ['ダート', '芝', 'その他'].forEach(key => {
+    if (groups[key].length === 0) return;
+    parts.push(`
+      <div class="pattern-group-heading">
+        ${key}<span class="group-count">${groups[key].length}件</span>
+      </div>
+      ${groups[key].map(renderPatternItem).join('')}
+    `);
+  });
+  return parts.join('');
+}
+
+function renderPatternItem(p) {
+  const isSelected = selectedPattern && selectedPattern.id === p.id;
+  return `
+    <div class="pattern-list-item ${isSelected ? 'selected' : ''}"
+         onclick="selectPattern('${p.id}')">
+      <div class="pattern-list-track">${escapeHtml(p.track)}${p.course ? ' / ' + escapeHtml(p.course) : ''}</div>
+      <div class="pattern-list-name">${escapeHtml(p.name)}</div>
+      <div class="pattern-list-stats">${escapeHtml(p.record)} / 複勝率 ${p.rate}% / 単 ${p.win_ror} / 複 ${p.place_ror}</div>
+    </div>
+  `;
+}
+
+function setPickerTrack(track) {
+  pickerActiveTrack = track;
+  renderPatternPicker();
+}
+
+function selectPattern(id) {
+  selectedPattern = patterns.find(p => p.id === id);
+  renderSelectedPattern();
+  const trackEl = document.getElementById('f_track');
+  if (!trackEl.value && selectedPattern) trackEl.value = selectedPattern.track;
+  const courseEl = document.getElementById('f_course');
+  if (!courseEl.value && selectedPattern && selectedPattern.course) courseEl.value = selectedPattern.course;
+  closePatternPicker();
+}
+
+function closePatternPicker() {
+  document.getElementById('patternModal').classList.remove('active');
+}
+
+function renderFormShots() {
+  const grid = document.getElementById('shotGrid');
+  const items = formShots.map((s, i) => `
+    <div class="shot-item">
+      <img src="${s.data}" onclick="openImgViewer(this.src)" alt="">
+      <div class="shot-label-chip" onclick="cycleShotLabel(${i})">${s.label}</div>
+      <button type="button" class="shot-remove" onclick="removeShot(${i})">×</button>
+    </div>
+  `).join('');
+  const addBtn = `
+    <label class="shot-add">
+      ＋
+      <input type="file" accept="image/*" multiple onchange="addShots(event)">
+    </label>
+  `;
+  grid.innerHTML = items + addBtn;
+}
+
+async function addShots(e) {
+  const files = Array.from(e.target.files);
+  for (const file of files) {
+    try {
+      const compressed = await compressImage(file);
+      // Guess label from filename hint (optional nicety)
+      let label = '陣営';
+      const name = (file.name || '').toLowerCase();
+      if (name.includes('ai') || name.includes('指数')) label = 'AI';
+      else if (name.includes('馬柱') || name.includes('umabashira')) label = '馬柱';
+      formShots.push({ data: compressed, label });
+    } catch (err) {
+      showToast('画像読込失敗: ' + err.message);
+    }
+  }
+  e.target.value = '';
+  renderFormShots();
+}
+
+function compressImage(file, maxDim = 1400, quality = 0.72) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > height) {
+          if (width > maxDim) { height *= maxDim / width; width = maxDim; }
+        } else {
+          if (height > maxDim) { width *= maxDim / height; height = maxDim; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(width);
+        canvas.height = Math.round(height);
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject;
+      img.src = reader.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function removeShot(i) {
+  formShots.splice(i, 1);
+  renderFormShots();
+}
+
+function cycleShotLabel(i) {
+  const current = formShots[i].label;
+  const idx = SHOT_LABELS.indexOf(current);
+  const next = SHOT_LABELS[(idx + 1) % SHOT_LABELS.length];
+  formShots[i].label = next;
+  renderFormShots();
+}
+
+function openImgViewer(src) {
+  document.getElementById('imgViewerImg').src = src;
+  document.getElementById('imgViewer').classList.add('active');
+}
+
+function closeImgViewer() {
+  document.getElementById('imgViewer').classList.remove('active');
+}
+
+// ===== Memo modal =====
+function renderMemoDisplay() {
+  const memo = document.getElementById('f_memo').value;
+  const display = document.getElementById('f_memo_display');
+  if (memo && memo.trim()) {
+    display.textContent = memo;
+    display.classList.remove('empty');
+  } else {
+    display.textContent = 'タップしてメモを入力';
+    display.classList.add('empty');
+  }
+}
+
+function openMemoModal() {
+  const current = document.getElementById('f_memo').value;
+  const area = document.getElementById('memoBigArea');
+  area.value = current;
+  document.getElementById('memoModal').classList.add('active');
+  // Focus after the slide-up animation
+  setTimeout(() => area.focus(), 300);
+}
+
+function saveMemoModal() {
+  const val = document.getElementById('memoBigArea').value;
+  document.getElementById('f_memo').value = val;
+  renderMemoDisplay();
+  document.getElementById('memoModal').classList.remove('active');
+}
+
+function cancelMemoModal() {
+  document.getElementById('memoModal').classList.remove('active');
+}
+
+function csvDebugLog(msg) {
+  console.log('[CSV]', msg);
+  const el = document.getElementById('csvDebug');
+  if (el) {
+    const time = new Date().toLocaleTimeString('ja-JP');
+    el.textContent = `[${time}] ${msg}\n` + (el.textContent || '');
+    // Keep only last ~10 lines
+    const lines = el.textContent.split('\n').slice(0, 12);
+    el.textContent = lines.join('\n');
+  }
+}
+
+async function processCSVText(text, source) {
+  try {
+    csvDebugLog(`${source}: ${text.length}文字を読み込みました`);
+    if (!text || !text.trim()) {
+      showToast('CSVが空です');
+      csvDebugLog('空データのため中止');
+      return;
+    }
+    const parsed = parseCSV(text);
+    csvDebugLog(`パース結果: ${parsed.length}行`);
+    if (parsed.length === 0) { showToast('CSVが空です'); return; }
+
+    const hasHeader = /競馬場|track/i.test(parsed[0][0] || '');
+    csvDebugLog(`ヘッダー行: ${hasHeader ? 'あり' : 'なし'}`);
+    const rows = hasHeader ? parsed.slice(1) : parsed;
+
+    const newPatterns = [];
+    let idCounter = Date.now();
+    let skipped = 0;
+    for (const row of rows) {
+      if (row.length < 3 || !row[0].trim()) { skipped++; continue; }
+      const p = {
+        id: 'p_' + (idCounter++),
+        track: (row[0] || '').trim(),
+        course: (row[1] || '').trim(),
+        name: (row[2] || '').trim(),
+        record: (row[3] || '').trim(),
+        rate: parseFloat(row[4]) || 0,
+        win_ror: parseInt(row[5]) || 0,
+        place_ror: parseInt(row[6]) || 0
+      };
+      if (!p.track || !p.name) { skipped++; continue; }
+      newPatterns.push(p);
+    }
+
+    csvDebugLog(`取り込み対象: ${newPatterns.length}件, スキップ: ${skipped}件`);
+
+    if (newPatterns.length === 0) {
+      showToast('取り込めるデータがありませんでした');
+      csvDebugLog('有効なデータなし');
+      return;
+    }
+
+    // Show 3-button choice modal instead of confusing confirm() dialogs
+    showImportChoice(newPatterns);
+  } catch (err) {
+    console.error('processCSVText', err);
+    showToast('インポート失敗: ' + err.message);
+    csvDebugLog(`✗ エラー: ${err.message}`);
+  }
+}
+
+let pendingImport = null;
+
+function showImportChoice(newPatterns) {
+  pendingImport = newPatterns;
+  const modal = document.getElementById('importChoiceModal');
+  document.getElementById('importChoiceCount').textContent = newPatterns.length;
+  document.getElementById('importChoiceExisting').textContent = patterns.length;
+  modal.classList.add('active');
+}
+
+async function doImport(mode) {
+  if (!pendingImport) return;
+  const newPatterns = pendingImport;
+  closeImportChoice();
+
+  if (mode === 'replace') {
+    patterns = newPatterns;
+    csvDebugLog(`モード: 置き換え (${patterns.length}件)`);
+  } else if (mode === 'append') {
+    patterns = patterns.concat(newPatterns);
+    csvDebugLog(`モード: 追加 (合計 ${patterns.length}件)`);
+  } else {
+    csvDebugLog('モード: キャンセル');
+    return;
+  }
+  await savePatterns();
+  renderSettings();
+  showToast(`${newPatterns.length}件を取り込みました`);
+  csvDebugLog(`✓ 保存完了: 合計 ${patterns.length}件`);
+  pendingImport = null;
+}
+
+function closeImportChoice() {
+  document.getElementById('importChoiceModal').classList.remove('active');
+}
+
+async function importCSV(e) {
+  const file = e.target.files[0];
+  if (!file) { csvDebugLog('ファイルが選択されませんでした'); return; }
+  csvDebugLog(`ファイル選択: ${file.name} (${file.size}バイト, type=${file.type || '不明'})`);
+
+  const reader = new FileReader();
+  reader.onload = async () => {
+    const text = reader.result;
+    await processCSVText(text, 'ファイル読込');
+  };
+  reader.onerror = () => {
+    showToast('ファイル読込失敗');
+    csvDebugLog(`✗ FileReader error: ${reader.error ? reader.error.message : 'unknown'}`);
+  };
+  try {
+    reader.readAsText(file, 'UTF-8');
+  } catch (err) {
+    showToast('読込エラー: ' + err.message);
+    csvDebugLog(`✗ readAsText error: ${err.message}`);
+  }
+  e.target.value = '';
+}
+
+async function importCSVFromText() {
+  const area = document.getElementById('csvPasteArea');
+  const text = area.value;
+  if (!text || !text.trim()) {
+    showToast('テキストが空です');
+    return;
+  }
+  await processCSVText(text, '貼り付け');
+}
+
+// ===== Export / Import all data (backup) =====
+function exportAllData() {
+  try {
+    const data = {
+      version: 2,
+      exported_at: new Date().toISOString(),
+      records: records,
+      patterns: patterns
+    };
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const today = new Date().toISOString().split('T')[0];
+    a.href = url;
+    a.download = `kachisuji-backup-${today}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    showToast(`${records.length}件の記録・${patterns.length}件の条件を書き出しました`);
+    csvDebugLog(`✓ エクスポート完了: ${json.length}文字`);
+  } catch (err) {
+    showToast('エクスポート失敗: ' + err.message);
+    csvDebugLog(`✗ エクスポートエラー: ${err.message}`);
+  }
+}
+
+async function importAllData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  csvDebugLog(`バックアップ選択: ${file.name} (${file.size}バイト)`);
+
+  const reader = new FileReader();
+  reader.onload = async () => {
+    try {
+      const data = JSON.parse(reader.result);
+      if (!data || typeof data !== 'object') throw new Error('JSONの形式が不正です');
+
+      const newRecords = Array.isArray(data.records) ? data.records : [];
+      const newPatterns = Array.isArray(data.patterns) ? data.patterns : [];
+
+      csvDebugLog(`読込: 記録${newRecords.length}件, 条件${newPatterns.length}件`);
+
+      if (!confirm(
+        `バックアップから復元します。\n\n` +
+        `・記録: ${newRecords.length}件\n` +
+        `・条件: ${newPatterns.length}件\n\n` +
+        `現在のデータはすべて置き換えられます。よろしいですか?`
+      )) {
+        csvDebugLog('ユーザーがキャンセルしました');
+        return;
+      }
+
+      records = newRecords;
+      patterns = newPatterns;
+      await saveRecords();
+      await savePatterns();
+      refresh();
+      renderSettings();
+      showToast(`復元完了: 記録${newRecords.length}件, 条件${newPatterns.length}件`);
+      csvDebugLog('✓ 復元完了');
+    } catch (err) {
+      showToast('復元失敗: ' + err.message);
+      csvDebugLog(`✗ 復元エラー: ${err.message}`);
+    }
+  };
+  reader.onerror = () => {
+    showToast('ファイル読込失敗');
+    csvDebugLog(`✗ FileReader error`);
+  };
+  reader.readAsText(file, 'UTF-8');
+  e.target.value = '';
+}
+
+function parseCSV(text) {
+  const rows = [];
+  let row = [], cell = '', inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"' && text[i+1] === '"') { cell += '"'; i++; }
+      else if (c === '"') { inQuotes = false; }
+      else { cell += c; }
+    } else {
+      if (c === '"') inQuotes = true;
+      else if (c === ',') { row.push(cell); cell = ''; }
+      else if (c === '\n') { row.push(cell); rows.push(row); row = []; cell = ''; }
+      else if (c === '\r') { /* skip */ }
+      else { cell += c; }
+    }
+  }
+  if (cell || row.length) { row.push(cell); rows.push(row); }
+  return rows.filter(r => r.some(c => c.trim()));
+}
+
+function renderSettings() {
+  const byTrack = {};
+  TRACKS.forEach(t => byTrack[t] = 0);
+  patterns.forEach(p => { if (byTrack[p.track] !== undefined) byTrack[p.track]++; });
+
+  const statsEl = document.getElementById('patternStats');
+  if (patterns.length === 0) {
+    statsEl.innerHTML = `<div class="settings-desc">まだ条件が登録されていません</div>`;
+  } else {
+    const tracksWithData = TRACKS.filter(t => byTrack[t] > 0);
+    if (tracksWithData.length === 0) {
+      statsEl.innerHTML = `<div class="settings-desc">登録済みですが、該当する競馬場がありません</div>`;
+    } else {
+      statsEl.innerHTML = tracksWithData.map(t => `
+        <div class="settings-stat">
+          <span>${t}</span>
+          <span class="value">${byTrack[t]}件</span>
+        </div>
+      `).join('');
+    }
+  }
+
+  document.getElementById('statRecords').textContent = `${records.length}件`;
+  document.getElementById('statPatterns').textContent = `${patterns.length}件`;
+  const totalShots = records.reduce((n, r) => n + (r.shots ? r.shots.length : 0), 0);
+  document.getElementById('statShots').textContent = `${totalShots}枚`;
+}
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function switchTab(view) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const tab = document.querySelector(`.tab[data-view="${view}"]`);
+  if (tab) tab.classList.add('active');
+  document.getElementById('view-' + view).classList.add('active');
+  if (view === 'all') renderAll();
+  if (view === 'settings') renderSettings();
+}
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.onclick = () => switchTab(tab.dataset.view);
+});
+
+function refresh() {
+  renderTracks();
+  if (currentTrack) selectTrack(currentTrack);
+  if (document.querySelector('.tab[data-view="all"]').classList.contains('active')) renderAll();
+  if (document.querySelector('.tab[data-view="settings"]').classList.contains('active')) renderSettings();
+}
+
+(async () => {
+  await loadAll();
+  renderTracks();
+})();
+</script>
+
+</body>
+</html>
