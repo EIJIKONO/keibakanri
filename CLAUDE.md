@@ -20,7 +20,7 @@ Netlifyで静的配信。ビルドステップなし、`index.html` をそのま
 
 ## 開発時の注意
 
-- **ストレージは `window.storage` を使う**。`localStorage` への直接アクセスは禁止。
+- **ストレージは `localStorage` を使う**。保存は `safeStorageSet(key, value)` ヘルパー経由で、QuotaExceededError を補足して具体的なエラーメッセージを出す。
 - **モバイル前提のUI**。タップ領域・フォントサイズ・縦スクロールを優先。デスクトップはおまけ。
 - 依存追加なし。外部ライブラリは既に読み込まれているもの(Google Fonts等)のみ。
 

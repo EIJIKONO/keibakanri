@@ -1042,13 +1042,13 @@ let selectedPattern = null;
 
 async function loadAll() {
   try {
-    const r = await window.storage.get('bet_records_v2');
-    records = r && r.value ? JSON.parse(r.value) : [];
+    const raw = localStorage.getItem('bet_records_v2');
+    records = raw ? JSON.parse(raw) : [];
   } catch (e) { records = []; }
 
   try {
-    const p = await window.storage.get('patterns_v2');
-    patterns = p && p.value ? JSON.parse(p.value) : [];
+    const raw = localStorage.getItem('patterns_v2');
+    patterns = raw ? JSON.parse(raw) : [];
   } catch (e) { patterns = []; }
 
   if (records.length === 0 && patterns.length === 0) {
@@ -1072,30 +1072,26 @@ async function loadAll() {
   }
 }
 
-async function safeStorageSet(key, value) {
-  // window.storage.set may throw even when the write succeeds, due to
-  // strict response format checks. Swallow those and only surface real failures
-  // on a subsequent read.
+function safeStorageSet(key, value) {
   try {
-    await window.storage.set(key, value);
+    localStorage.setItem(key, value);
     return true;
   } catch (e) {
-    // Verify by reading back: if the value is there, treat as success.
-    try {
-      const check = await window.storage.get(key);
-      if (check && check.value === value) return true;
-    } catch (_) {}
+    const isQuota = e && (e.name === 'QuotaExceededError' || e.code === 22 || e.code === 1014);
+    safeStorageSet.lastError = isQuota
+      ? '容量不足です(スクショを減らすか、JSONバックアップ後に古い記録を削除してください)'
+      : (e && e.message ? e.message : '不明なエラー');
     return false;
   }
 }
 
 async function saveRecords() {
-  const ok = await safeStorageSet('bet_records_v2', JSON.stringify(records));
-  if (!ok) showToast('記録の保存に失敗しました');
+  const ok = safeStorageSet('bet_records_v2', JSON.stringify(records));
+  if (!ok) showToast('記録の保存に失敗しました: ' + safeStorageSet.lastError);
 }
 
 async function savePatterns() {
-  await safeStorageSet('patterns_v2', JSON.stringify(patterns));
+  safeStorageSet('patterns_v2', JSON.stringify(patterns));
   // silent: patterns save is not user-initiated on seed
 }
 
